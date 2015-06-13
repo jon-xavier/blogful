@@ -7,7 +7,7 @@ import mistune
 
 
 @app.route("/")
-@app.route("/page/<int:page>")
+@app.route("/page/<int:page>/")
 def posts(page=1, paginate_by=10):
     # Zero-indexed page
     page_index = page - 1
@@ -46,3 +46,34 @@ def add_post_post():
     session.add(post)
     session.commit()
     return redirect(url_for("posts"))
+
+@app.route("/post/<post_id>/", methods=["GET"])
+def individual_post_view(post_id):
+    return render_template("individual_post.html",
+       post=session.query(Post).get(post_id)
+    )
+    
+@app.route("/post/<post_id>/edit", methods=["GET"])
+def edit_post_get(post_id):
+    post=session.query(Post).get(post_id)
+    body = post.content
+    return render_template("edit_post.html", post=post, body=body)
+                        
+    
+@app.route("/post/<post_id>/edit", methods=["POST"])
+def edit_post_post(post_id):
+    post=session.query(Post).get(post_id)
+    post.title = request.form["title"]
+    post.content = mistune.markdown(request.form["content"])
+    
+    session.commit()
+    return redirect(url_for("posts"))
+
+@app.route("/post/<post_id>/delete/", methods=["GET"])
+def delete_post(post_id):
+    post=session.query(Post).get(post_id)
+    session.delete(post)
+    session.commit()
+    
+    return redirect(url_for("posts"))
+

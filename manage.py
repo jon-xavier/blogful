@@ -3,7 +3,8 @@ from flask.ext.script import Manager
 
 from blog import app
 from blog.models import Post
-from blog.database import session
+from blog.database import session, db_session
+
 
 manager = Manager(app)
 
@@ -23,7 +24,10 @@ def seed():
         )
         session.add(post)
     session.commit()
-    
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
     
     
 if __name__ == "__main__":

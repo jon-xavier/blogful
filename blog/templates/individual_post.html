@@ -1,0 +1,12 @@
+{% import "macros.html" as macros %}
+{% extends "base.html" %}
+{% block content %}
+
+{{ macros.render_post(post) }}
+</div>
+    <div class="col-md-10">
+        <a class="btn btn-default" href="/post/{{post.id}}/edit/" role="button">Edit</a>
+        <a class="btn btn-default" href="/post/{{post.id}}/delete/" role="button">Delete</a>
+    </div>
+</div>
+{% endblock %}
