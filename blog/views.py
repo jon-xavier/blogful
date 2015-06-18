@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
-from flask.ext.login import login_user, login_required
-from werkzeug.security import check_password_hash
+from flask.ext.login import login_user, login_required, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from blog import app
 
@@ -37,12 +37,12 @@ def posts(page=1, paginate_by=10):
     )
 
 @app.route("/post/add", methods=["GET"])
-##@login_required
+@login_required
 def add_post_get():
     return render_template("add_post.html")
 
 @app.route("/post/add", methods=["POST"])
-##s@login_required
+@login_required
 def add_post_post():
     post = Post(
         title=request.form["title"],
@@ -59,7 +59,7 @@ def individual_post_view(post_id):
     )
     
 @app.route("/post/<post_id>/edit/", methods=["GET"])
-##@login_required
+@login_required
 def edit_post_get(post_id):
     post=session.query(Post).get(post_id)
     body = post.content
@@ -67,7 +67,7 @@ def edit_post_get(post_id):
                         
     
 @app.route("/post/<post_id>/edit/", methods=["POST"])
-##@login_required
+@login_required
 def edit_post_post(post_id):
     post=session.query(Post).get(post_id)
     post.title = request.form["title"]
@@ -77,13 +77,43 @@ def edit_post_post(post_id):
     return redirect(url_for("posts"))
 
 @app.route("/post/<post_id>/delete/", methods=["GET"])
-##@login_required
+@login_required
 def delete_post(post_id):
     post=session.query(Post).get(post_id)
     session.delete(post)
     session.commit()
     
     return redirect(url_for("posts"))
+
+@app.route("/newuser", methods=["GET"])
+def create_user_get():
+    return render_template("newuser.html")
+
+@app.route("/newuser", methods=["POST"])
+def create_user_post():
+    name = request.form["name"]
+    email = request.form["email"]
+    password = request.form["password"]
+    password2 = request.form["password2"]
+    userexists = session.query(User).filter_by(email=email).first()
+    if userexists:
+        flash("There is already a user associated with this email. Try another", "danger")
+        return redirect(url_for("create_user_get"))
+    
+    elif password != password2:
+        flash("Passwords don't match, please try again", "danger")
+        return redirect(url_for("create_user_get"))
+    
+    else:
+        user=User(
+            name=name,
+            email=email,
+            password=generate_password_hash(password)
+        )
+        session.add(user)
+        session.commit()
+        login_user(user)
+        return redirect(request.args.get('next') or url_for("posts"))
 
 @app.route("/login", methods=["GET"])
 def login_get():
@@ -99,4 +129,9 @@ def login_post():
         return redirect(url_for("login_get"))
 
     login_user(user)
+    return redirect(request.args.get('next') or url_for("posts"))
+
+@app.route("/logout",)
+def logout():
+    logout_user()
     return redirect(request.args.get('next') or url_for("posts"))
