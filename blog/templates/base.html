@@ -18,6 +18,19 @@
         <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
         <!-- Bootstrap -->
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <!-- Tinymce -->
+        <!-- CDN hosted by Cachefly -->
+        <script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script>
+        <script>tinymce.init({selector:'textarea'});</script>
+        <!-- Bootstrap focus block -->
+        <script>
+        $(document).on('focusin', function(e) {
+           if ($(e.target).closest(".mce-window").length) {
+              e.stopImmediatePropagation();
+              }
+           });
+        </script> 
+        
     </head>
 
     <body>
@@ -32,6 +45,7 @@
                     </button>
                     <a class="navbar-brand" href="{{ url_for('posts') }}">Blogful</a>
                 </div>
+                
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
                     </ul>
@@ -41,6 +55,17 @@
 
         <div class="container">
             {% block content %}{% endblock %}
+        </div>
+        <div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+               <div class="alert alert-{{ category }}">
+                  {{ message }}
+               </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
         </div>
     </body>
 </html>
