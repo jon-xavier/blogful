@@ -5,3 +5,4 @@ def dateformat(date, format):
     if not date:
         return None
     return date.strftime(format)
+
